@@ -1,0 +1,6 @@
+[submodule "third-party/sym2pyfun"]
+	path = third-party/sym2pyfun
+	url = https://github.com/tik0/sym2pyfun.git
+[submodule "third-party/urdf_parser_py"]
+	path = third-party/urdf_parser_py
+	url = https://github.com/ros/urdf_parser_py.git
