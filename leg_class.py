@@ -153,51 +153,15 @@ class legKinematics():
 
 
 
-class jointSpacePDController():
-    def __init__(self, Kp, Kd, qd = np.zeros(3)):
-        self.Kp = Kp
-        self.Kd = Kd
-        self.qd = qd
-
-    def changeSetPoint(self, qd):
-        self.qd = qd
-
-    def computeJointTorques(self, q, q_dot):
-        """ !!! Correct algorithm should implement gravity compensation """
-        return np.dot(self.Kp, self.qd - q) - np.dot(self.Kd, q_dot)
-
-
-
-class  operationalSpacePDController():
-    def __init__(self, Kp, Kd, xd = np.zeros(3)):
-        self.Kp = Kp
-        self.Kd = Kd
-        self.xd = xd
-
-    def changeSetPoint(self, xd):
-        self.xd = xd
-
-    def computeJointTorques(self, x, q_dot, J):
-        """ !!! pay attention to input
-            :x[3] is cartesian position of the end-effector
-            :q_dot[3] joint space velocitis
-            :J[3x3] jacobian - linear part """
-        _x_tilde = self.xd - x
-        _t1 =  np.dot(np.transpose(J), self.Kp)
-        _t2 = np.dot(np.transpose(J), np.dot(self.Kd, J))
-        return np.dot(_t1, _x_tilde) - np.dot(_t2, q_dot)
-
-    # def computeJointTorques(self, ):
-
 
 
 if __name__ == "__main__":
     # Test the class
     leg1 = legKinematics()
     q = np.array([1, 2, 3])
-    # print(leg1.getForwardKinematics(q))
-    # print(leg1.getJacobian(q))
-    # print(leg1.urdf.links[0].inertial.inertia.to_matrix())
+    print(leg1.getForwardKinematics(q))
+    print(leg1.getJacobian(q))
+    print(leg1.urdf.links[0].inertial.inertia.to_matrix())
     
     
     g = -9.81
@@ -206,32 +170,4 @@ if __name__ == "__main__":
     
     print(leg1.RNEA(q, q_dot, q_2dot, g))
     
-    """
-    # Test joint space PD controller
-    Kp = np.eye(3)
-    Kd = 0.1*np.eye(3)
-    qd = np.array([1, 1, 0])
-    
-    controller = jointSpacePDController(Kp, Kd, qd)
-    controller.changeSetPoint(np.array([1, 1, 1]))
-    q = np.zeros(3)
-    q_dot = np.array([1, 1, 1])
-    
-    print(controller.computeJointTorques(q, q_dot))
-    
-    
-    
-    # Test operation space pd controller
-    xd = np.array([0., 0., 0.2])
-    controller2 = operationalSpacePDController(Kp, Kd, xd)
-    
-    x = np.array([0., 0., 0.15])
-    q_dot = np.array([0., 0., 0.])
-    J = np.random.rand(3)
-    
-    print(controller2.computeJointTorques(x, q_dot, J))
-    
-    xd_new = np.array([0., 0., 0.25])
-    controller2.changeSetPoint(xd_new)
-    print(controller2.computeJointTorques(x, q_dot, J))
-    """
+  
