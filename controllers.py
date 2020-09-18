@@ -7,6 +7,15 @@ module contains classes that implement different controllers
 """
 import numpy as np
 
+
+# Torque saturation function
+def torque_saturation(tau, tau_max): 
+    for k in range(3):
+        if abs(tau[k]) > tau_max:
+            tau[k] = np.sign(tau[k])*tau_max
+    return tau
+
+
 class jointSpacePDController():
     def __init__(self, Kp, Kd, qd = np.zeros(3)):
         self.Kp = Kp
