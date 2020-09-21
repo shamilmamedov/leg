@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Send commands and read from multiple motors
+The script implements regulation -- setpoint control
 """
 import can
 import numpy as np
@@ -29,8 +29,11 @@ t = np.empty(0)
 Kp = 10.*np.eye(3)
 Kd = 1.*np.eye(3)
 tau_max = 2.0 # saturation torque
+
+
 # Create controller instance
-controller = cntrl.jointSpacePDController(Kp, Kd)
+controller = cntrl.JointSpacePDController(Kp, Kd)
+
 
 # Set all the motors to control mode
 for k in MOTOR_IDS:
@@ -46,14 +49,15 @@ for k in range(3):
     q_dot[drv_id-1, 0] = vel
     tau[drv_id-1, 0] = trq
     
-
+"""
 q_des = q[:,0] + 0.1 # set desired position
-controller.changeSetpoint(q_des)
+controller.change_reference(q_des)
 for i in range(30000):
     
     # PD control of the chosen motor
-    tau_i = controller.computeJointTorques(q[:,i], q_dot[:,i])
-#    tau_i = np.dot(Kp, q_des - q[:,i]) - np.dot(Kd, q_dot[:,i])
+    tau_i = controller.compute_torques(q[:,i], q_dot[:,i])
+
+    # Saturate torques if necessary
     tau_i = cntrl.torque_saturation(tau_i, tau_max)
     
     for k in MOTOR_IDS:
@@ -72,9 +76,10 @@ for i in range(30000):
         q[drv_id-1, i+1] = pos
         q_dot[drv_id-1, i+1] = vel
         tau[drv_id-1, i+1] = trq
-    
 
-# Set all the motors to control mode
+"""    
+
+# Exit control mode for all motors
 for k in MOTOR_IDS:
     msg_k = can.Message(arbitration_id = k, data = cmctn.EXIT_CONTROL_MODE_CODE,
                         is_extended_id=False)
@@ -83,10 +88,11 @@ for k in MOTOR_IDS:
 # Read mesaage from the bus 
 for k in range(3):
     msg_in_k = bus.recv()
+
     
 
 #%% Plot Torques
-    
+    """
 plt.figure()
 plt.plot(t - t[0], tau[0,1:], label = 'tau_1')
 plt.plot(t - t[0], tau[1,1:], label = 'tau_2')
@@ -95,5 +101,5 @@ plt.legend()
 plt.xlabel('t, sec')
 plt.grid()
 
-
+"""
    

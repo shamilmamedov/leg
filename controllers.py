@@ -10,37 +10,42 @@ import numpy as np
 
 # Torque saturation function
 def torque_saturation(tau, tau_max): 
+    """Function that saturates joint torques by a given maximum value """
     for k in range(3):
         if abs(tau[k]) > tau_max:
             tau[k] = np.sign(tau[k])*tau_max
     return tau
 
 
-class jointSpacePDController():
-    def __init__(self, Kp, Kd, qd = np.zeros(3)):
+class JointSpacePDController():
+    """A class that implements joint space PD controller """
+    def __init__(self, Kp, Kd, desired_position=np.zeros(3), desired_velocity=np.zeros(3)):
         self.Kp = Kp
         self.Kd = Kd
-        self.qd = qd # desired position
+        self.desired_position = desired_position 
+        self.desired_velocity = desired_velocity 
 
-    def changeSetpoint(self, qd):
-        self.qd = qd
+    def change_reference(self, q, q_dot=np.zeros(3)):
+        self.desired_position = q
+        self.desired_velocity = q_dot
 
-    def computeJointTorques(self, q, q_dot):
+    def compute_torques(self, q, q_dot):
         """ !!! Correct algorithm should implement gravity compensation """
-        return np.dot(self.Kp, self.qd - q) - np.dot(self.Kd, q_dot)
+        return np.dot(self.Kp, self.desired_position - q) \
+                + np.dot(self.Kd, self.desired_velocity - q_dot)
 
    
     
-class  operationalSpacePDController():
+class  OperationalSpacePDController():
     def __init__(self, Kp, Kd, xd = np.zeros(3)):
         self.Kp = Kp
         self.Kd = Kd
         self.xd = xd # desired cartesian position
 
-    def changeSetpoint(self, xd):
+    def change_setpoint(self, xd):
         self.xd = xd
 
-    def computeJointTorques(self, x, q_dot, J):
+    def compute_torques(self, x, q_dot, J):
         """ !!! pay attention to input
             :x[3] is cartesian position of the end-effector
             :q_dot[3] joint space velocitis
@@ -60,27 +65,27 @@ if __name__ == "__main__":
     qd = np.array([1, 1, 0])
     
     # create controller instance
-    controller = jointSpacePDController(Kp, Kd, qd)
+    controller = JointSpacePDController(Kp, Kd, qd)
     
     # Mmake sure that it is possible to change setpoint
     print('Old setpoint: ', controller.qd)
-    controller.changeSetpoint(np.array([1, 1, 1]))
+    controller.change_reference(np.array([1, 1, 1]))
     print('New setpoint: ', controller.qd)
     
     # Compute control torques
     q = np.zeros(3)
     q_dot = np.array([1, 1, 1])
-    print('Control Torques: ', controller.computeJointTorques(q, q_dot))
+    print('Control Torques: ', controller.compute_torques(q, q_dot))
    
     print('\n')
     # Test operation space pd controller
     xd = np.array([0., 0., 0.2])
-    controller2 = operationalSpacePDController(Kp, Kd, xd)
+    controller2 = OperationalSpacePDController(Kp, Kd, xd)
     
     # Test that it is possible to change setpoint
     print('Old setpoint: ', controller2.xd)
     xd_new = np.array([0., 0., 0.25])
-    controller2.changeSetpoint(xd_new)
+    controller2.change_setpoint(xd_new)
     print('New setpoint: ', controller2.xd)
     
     # Test computation of the control torques
@@ -88,6 +93,6 @@ if __name__ == "__main__":
     q_dot = np.array([0., 0., 0.])
     J = np.random.rand(3)
           
-    print('Control Torques: ', controller2.computeJointTorques(x, q_dot, J))
+    print('Control Torques: ', controller2.compute_torques(x, q_dot, J))
     
     

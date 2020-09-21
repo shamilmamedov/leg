@@ -59,7 +59,7 @@ for i in range(10000):
     tau_i = np.dot(Kp, q_des_i - q[i]) + np.dot(Kd, q_dot_des_i - q_dot[i])
     if abs(tau_i) > tau_max:
         tau_i = np.sign(tau_i)*tau_max
-#    tau_i = cntrl.torque_saturation(tau_i, tau_max)
+
     
     # send control message
     msg_out = can.Message(arbitration_id = MOTOR_ID, 
