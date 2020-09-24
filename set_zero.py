@@ -3,7 +3,10 @@
 """
 Created on Mon Sep 21 10:22:08 2020
 
-The script is used to set zero positin of the robot
+The script is used to set zero positin of the robot.
+
+The command seems to work within a single working session, i.e., after
+turning off the power old zeros are reset
 """
 import can
 import communication as cmctn

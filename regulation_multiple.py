@@ -41,31 +41,31 @@ for k in MOTOR_IDS:
                         is_extended_id=False)
     bus.send(msg_k)
 
-# Read initial states 
+# Read initial states
 for k in range(3):
     msg_in_k = bus.recv()
     drv_id, pos, vel, trq = cmctn.unpack_reply(msg_in_k)
     q[drv_id-1, 0] = pos
     q_dot[drv_id-1, 0] = vel
     tau[drv_id-1, 0] = trq
-    
+
 """
 q_des = q[:,0] + 0.1 # set desired position
 controller.change_reference(q_des)
 for i in range(30000):
-    
+
     # PD control of the chosen motor
     tau_i = controller.compute_torques(q[:,i], q_dot[:,i])
 
     # Saturate torques if necessary
     tau_i = cntrl.torque_saturation(tau_i, tau_max)
-    
+
     for k in MOTOR_IDS:
-        msg_out_k = can.Message(arbitration_id = k, 
+        msg_out_k = can.Message(arbitration_id = k,
                                 data = cmctn.pack_torque_command(tau_i[k-1]),
                                 is_extended_id=False)
         bus.send(msg_out_k)
-    
+
     t = np.append(t, time.clock())
     q = np.append(q, np.zeros((3,1)), axis=1)
     q_dot = np.append(q_dot, np.zeros((3,1)), axis=1)
@@ -77,7 +77,7 @@ for i in range(30000):
         q_dot[drv_id-1, i+1] = vel
         tau[drv_id-1, i+1] = trq
 
-"""    
+"""
 
 # Exit control mode for all motors
 for k in MOTOR_IDS:
@@ -85,14 +85,15 @@ for k in MOTOR_IDS:
                         is_extended_id=False)
     bus.send(msg_k)
 
-# Read mesaage from the bus 
+# Read mesaage from the bus
 for k in range(3):
     msg_in_k = bus.recv()
 
-    
+
+print('Position:', q[:, 0])
 
 #%% Plot Torques
-    """
+"""
 plt.figure()
 plt.plot(t - t[0], tau[0,1:], label = 'tau_1')
 plt.plot(t - t[0], tau[1,1:], label = 'tau_2')
@@ -102,4 +103,3 @@ plt.xlabel('t, sec')
 plt.grid()
 
 """
-   

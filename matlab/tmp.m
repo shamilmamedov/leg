@@ -1,8 +1,22 @@
 clc; clear all; close all;
 
-robot = importrobot('/home/shamil/ros/leg_ws/src/leg_description/urdf/leg_setup.urdf');
+robot = importrobot('/home/shamil/ros/leg_ws/src/leg_description/urdf/leg_setup2.urdf');
 robot.DataFormat = 'column';
 robot.Gravity = [0, 0, -9.81];
+
+%%
+q = -pi + 2*pi*rand(3,1);
+T_matlab = getTransform(robot, q, robot.BodyNames{5});
+J = geometricJacobian(robot, q, robot.BodyNames{5});
+pos_matlab = T_matlab(1:3,4);
+
+q'
+
+Jv = J(4:6,:)
+
+Jw = J(1:3,:)
+
+return
 
 %%
 q  = [1, 2, 3]';
@@ -10,7 +24,7 @@ q_dot = [1, 1, 1]';
 q_2dot = [2, 2, 2]';
 inverseDynamics(robot,q,q_dot,q_2dot)
 
-leg = xml2struct('/home/shamil/ros/leg_ws/src/leg_description/urdf/leg_setup.urdf');
+leg = xml2struct('/home/shamil/ros/leg_ws/src/leg_description/urdf/leg_setup2.urdf');
 
 
 return

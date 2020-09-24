@@ -1,11 +1,12 @@
-#!/usr/bin/env python
+# #!/usr/bin/env python3
+
 import numpy as np
 from urdf_parser_py.urdf import URDF
 
 
-class legKinematics():
+class LegKinematics():
     def __init__(self):
-        urdf_file = open("/home/shamil/ros/leg_ws/src/leg_description/urdf/leg_setup.urdf", "r")
+        urdf_file = open("/home/shamil/ros/leg_ws/src/leg_description/urdf/leg_setup2.urdf", "r")
         self.urdf = URDF.from_xml_string(urdf_file.read())
         self.world_to_base_joint_no = 4
         self.Twb = self.getWorldToBaseTransform()
@@ -81,6 +82,10 @@ class legKinematics():
             Twk = np.dot(Twk, Tpc)
         return self.TransToRp(Twk)[1]
 
+    def getInverseKinematics(self, x):
+
+        return 0
+
     def getJacobian(self, q):
         """ Compute Jacobian"""
         Twk = np.zeros((5,4,4))
@@ -114,7 +119,7 @@ class legKinematics():
         ac_kk = np.zeros((3,3))
         Rpc = np.zeros((4,3,3))
 
-        a_kk[:,0] = - g_ww
+        a_kk[:,0] = -g_ww
 
         for k in range(3):
             Rjk = self.Rot(q[k], self.urdf.joints[k].axis)
@@ -153,21 +158,53 @@ class legKinematics():
 
 
 
+class TestLegKinematics():
+    def test_forward_kinematics(self):
+        """ Test forward kinematics by computing froward kinematics for four different configurations and compares
+            the result with the result obtained by using matlab robotics systems toolbox 
+        """
+        leg = LegKinematics()
+        q = np.array([[0.8407, 0.2543, 0.8143], [-1.3456, 1.6160, 1.5942], [-2.8026, 0.1935, 1.7541], [2.7270, -2.3254, 0.4324]])
+        res = np.array([[0.2252, 0.1187, 0.3647], [-0.1739, 0.1032, -0.1728], [-0.1402, -0.2119, 0.1808], [-0.2022, 0.3060, -0.1527]])
+        residual = np.zeros(4)
+        for k in range(4):
+            x_k = leg.getForwardKinematics(q[k,:])
+            residual[k] = np.linalg.norm(x_k - res[k,:])
+        return residual
+
+    def test_jacobian(self):
+        """ Test jacobians """
+        leg = LegKinematics()
+        q = np.array([[-2.1226, 1.8490, -1.1862], [0.1793, -2.1008, 0.6408], [-1.4893, 0.9681, 1.1889]])
+        res = np.zeros((3,6,3))
+        res[0,:,:] = np.array([[-0.1229, -0.0975, -0.1477], [0.3175, -0.0600, -0.0909], [0.0000 ,  -0.3348,   -0.1354], 
+                                [0.0000, 0.5242, 0.5242], [0.0000, -0.8516, -0.8516], [-1.0000, 0.0000, 0.0000]])
+        res[1,:,:] = np.array([[-0.4037, -0.0141, 0.0043], [0.0104, -0.0779, 0.0239], [0.0000, 0.3991, 0.2187],
+                                [-0.0000, -0.9840, -0.9840], [0.0000, 0.1783, 0.1783], [-1.0000, 0.0000, 0.0000]])
+        res[2,:,:] = np.array([[0.0905, 0.0054, 0.1213], [0.3495, -0.0004, -0.0099], [0.0000, -0.3557, -0.1833], 
+                                [-0.0000, -0.0814, -0.0814], [0.0000, -0.9967, -0.9967], [-1.0000, 0.0000, 0.0000]])
+
+        residual = np.zeros(3)
+        for k in range(3):
+            J_k = leg.getJacobian(q[k,:])
+            residual[k] = np.linalg.norm(J_k - res[k,:,:])
+        return residual
+
 
 
 if __name__ == "__main__":
     # Test the class
-    leg1 = legKinematics()
-    q = np.array([1, 2, 3])
-    print(leg1.getForwardKinematics(q))
-    print(leg1.getJacobian(q))
-    print(leg1.urdf.links[0].inertial.inertia.to_matrix())
+    test = TestLegKinematics()
+    print('Forward kinematics residual: ', test.test_forward_kinematics())
     
-    
-    g = -9.81
-    q_dot = np.array([1., 1., 1.])
-    q_2dot = np.array([2., 2., 2.])
-    
-    print(leg1.RNEA(q, q_dot, q_2dot, g))
-    
-  
+    print('Jacobian residual:', test.test_jacobian())
+    # print('Jacobian: \n', leg1.getJacobian(q)[0:3,0:3])
+    #print(leg1.urdf.links[0].inertial.inertia.to_matrix())
+
+    leg = LegKinematics()
+    print(leg.Tpj)
+    #g = -9.81
+    #q_dot = np.array([1., 1., 1.])
+    #q_2dot = np.array([2., 2., 2.])
+
+    #print(leg1.RNEA(q, q_dot, q_2dot, g))
