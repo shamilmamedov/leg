@@ -37,23 +37,26 @@ class JointSpacePDController():
 
 
 class  OperationalSpacePDController():
-    def __init__(self, Kp, Kd, xd = np.zeros(3)):
+    def __init__(self, Kp, Kd, desired_position = np.zeros(3), desired_velocity = np.zeros(3)):
         self.Kp = Kp
         self.Kd = Kd
-        self.xd = xd # desired cartesian position
+        self.desired_position = desired_position # desired cartesian position
+        self.desired_velocity = desired_velocity # desired cartesian velocity
 
-    def change_setpoint(self, xd):
-        self.xd = xd
+    def change_reference(self, desired_position, desired_velocity=np.zeros(3)):
+        self.desired_position = desired_position
+        self.desired_velocity = desired_velocity
 
-    def compute_torques(self, x, q_dot, J):
+    def compute_torques(self, x, x_dot, J):
         """ !!! pay attention to input
             :x[3] is cartesian position of the end-effector
-            :q_dot[3] joint space velocitis
+            :x_dot[3] cartesian velocitis
             :J[3x3] jacobian - linear part """
-        _x_tilde = self.xd - x
+        _x_tilde = self.desired_position - x
+        _x_dot_tilde = self.desired_velocity - x_dot 
         _t1 =  np.dot(np.transpose(J), self.Kp)
-        _t2 = np.dot(np.transpose(J), np.dot(self.Kd, J))
-        return np.dot(_t1, _x_tilde) - np.dot(_t2, q_dot)
+        _t2 = np.dot(np.transpose(J), self.Kd)
+        return np.dot(_t1, _x_tilde) + np.dot(_t2, _x_dot_tilde)
 
 
 

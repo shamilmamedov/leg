@@ -5,7 +5,35 @@ robot.DataFormat = 'column';
 robot.Gravity = [0, 0, -9.81];
 
 %%
-q = -pi + 2*pi*rand(3,1);
+clc
+q = [-1.49, 0.66, 0.5]';
+Tw1 = getTransform(robot, q, robot.BodyNames{2});
+Tw2 = getTransform(robot, q, robot.BodyNames{3});
+Tw3 = getTransform(robot, q, robot.BodyNames{4});
+Twee = getTransform(robot, q, robot.BodyNames{5});
+
+T3ee = getTransform(robot, q, robot.BodyNames{4}, robot.BodyNames{5});
+pw_3ee = Tw3(1:3,1:3)*T3ee(1:3,4)
+
+T23 = getTransform(robot, q, robot.BodyNames{3}, robot.BodyNames{4});
+pw_23 = Tw2(1:3,1:3)*T23(1:3,4)
+
+T24 = getTransform(robot, q, robot.BodyNames{3}, robot.BodyNames{5})
+pw_24 = Tw2(1:3,1:3)*T24(1:3,4)
+
+a2 = norm(pw_23(2:3),2);
+a3 = norm(pw_3ee(2:3),2);
+
+
+z_ee = pw_24(3);
+y_ee = pw_24(2);
+
+cosq3 = (z_ee^2 + y_ee^2 - a2^2 - a3^2)/(2*a2*a3);
+q3 = atan2(sqrt(1 - cosq3^2), cosq3)
+
+q2 = atan2(y_ee, z_ee) + atan2(a3*sin(q3), a2 + a3*cos(q3))
+
+return
 T_matlab = getTransform(robot, q, robot.BodyNames{5});
 J = geometricJacobian(robot, q, robot.BodyNames{5});
 pos_matlab = T_matlab(1:3,4);
