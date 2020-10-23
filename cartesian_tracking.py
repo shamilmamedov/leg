@@ -82,7 +82,7 @@ for i in range(20000):
     # compute cartesian position and velocity
     xi = leg.getForwardKinematics(q[:,i])
     Ji = leg.getJacobian(q[:,i])[0:3,0:3]
-    xdoti = np.dot(np.transpose(Ji), q_dot[:,i])
+    xdoti = np.dot(Ji, q_dot[:,i])
 
     # PD control of the chosen motor
     tau_i = controller.compute_torques(xi, xdoti, Ji)

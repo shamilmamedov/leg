@@ -19,6 +19,8 @@ for k in range(1,4):
 """
 a2 = np.linalg.norm(Twj[2,1:3,3] - Twj[1,1:3,3], 2)
 a3 = np.linalg.norm(Twj[3,1:3,3] - Twj[2,1:3,3], 2)
+print('a2 = ', a2)
+print('a3 = ', a3)
 
 
 """ Given YZ coordinates of the position vector, compute 

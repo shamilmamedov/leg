@@ -1,0 +1,12 @@
+To setup can connection using CANHacker:
+1) check connected devices
+	ls /dev/tty*
+
+2) sudo slcand -o -c -s8 -S115200 /dev/ttyACM6 can0 
+	ttyACM6 is the name of the connected device
+
+3) sudo ip link set up can0
+
+4) setup length of the TXbuffer
+	sudo ip link set can0 txqueuelen 50
+
