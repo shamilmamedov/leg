@@ -96,7 +96,7 @@ else:
                 q_tilde_i = q_des_i - q[:,i] 
                 # compute control signal accroding to PD control law
                 tau_i = np.dot(Kp, q_tilde_i) - np.dot(Kd, q_dot[:,i])
-            elif (i > 1000 and i < 1175):
+            elif (i > 1000 and i < 1300):
                 tau_i = np.array([-18., 18.])
             else:
                 q_des_i = q_post_jump
@@ -160,21 +160,5 @@ for k in MOTOR_IDS:
     msg_in_k = bus.recv(timeout=0.01)
 
 
-plt.figure()
-plt.plot(t - t[0], q_des[0,:], label='q1 des')
-plt.plot(t - t[0], q_des[1,:], label='q2 des')
-plt.plot(t - t[0], q[0,:], label='q1 real')
-plt.plot(t - t[0], q[1,:], label='q2 real')
-plt.grid()
-plt.legend()
-plt.show()
-
-
-plt.figure()
-plt.plot(t - t[0], tau_des[0,:], label='q1 real')
-plt.plot(t - t[0], tau_des[1,:], label='q2 real')
-plt.grid()
-plt.legend()
-plt.show()
 
 

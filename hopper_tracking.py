@@ -35,13 +35,13 @@ q_des = np.empty((2,1))
 tau_des = np.empty((2,1))
 
 # Controller paramters
-Kp = np.array([[20., 0.], [0., 20.]])
+Kp = np.array([[25., 0.], [0., 25.]])
 Kd = np.array([[1, 0.], [0., 1]])
 tau_max = [18., 18.] # 8 10
 
 # Trajectry paramters
 A = np.array([0.1, 0.])
-omega = np.array([5*np.pi, 0.]) # maximum was 5
+omega = np.array([4*np.pi, 0.]) # maximum was 5
 
 # paramter that defines control or reading
 only_read_states = False
@@ -81,9 +81,10 @@ else:
     # print(q0)
     q0 = np.array([1.07398, -1.7516])
     x0 = hopper_kinematics.get_forward_kinematics(q0)
+    qf = np.array([1.103, -2.1907])
     t = np.append(t, time.time())
 
-    n_iter = 5000
+    n_iter = 100000
     for i in range(n_iter):
         # Send desired torques to motors
         try:
