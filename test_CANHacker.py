@@ -4,7 +4,7 @@ import can
 import communication as cmctn
 
 # Constant
-MOTOR_ID = 1
+MOTOR_ID = 3
 
 
 # create a bus instance

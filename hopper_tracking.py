@@ -9,6 +9,7 @@ import time
 import communication as cmctn
 import hopper_kinematics
 from matplotlib import pyplot as plt
+import csv
 
 
 # Constants
@@ -40,8 +41,8 @@ Kd = np.array([[1, 0.], [0., 1]])
 tau_max = [18., 18.] # 8 10
 
 # Trajectry paramters
-A = np.array([0.1, 0.])
-omega = np.array([4*np.pi, 0.]) # maximum was 5
+A = np.array([0.15, 0.])
+omega = np.array([5*np.pi, 0.]) # maximum was 5
 
 # paramter that defines control or reading
 only_read_states = False
@@ -70,6 +71,7 @@ for k in MOTOR_IDS:
         tau[drv_id-2, 0] = trq
 
 
+
 if only_read_states:
     print('Initial position = ', q[:,0])
 else:
@@ -84,7 +86,7 @@ else:
     qf = np.array([1.103, -2.1907])
     t = np.append(t, time.time())
 
-    n_iter = 100000
+    n_iter = 20000
     for i in range(n_iter):
         # Send desired torques to motors
         try:
@@ -154,6 +156,20 @@ for k in MOTOR_IDS:
 # Read mesaage from the bus
 for k in MOTOR_IDS:
     msg_in_k = bus.recv(timeout=0.01)
+
+
+
+
+# write into file
+filename = 'logs/jumps_A' + str(A[0]) + "_w" + str(omega[0])
+
+with open(filename, 'w', newline='') as csvfile:
+    spamwriter = csv.writer(csvfile, delimiter=',',
+                            quotechar='|', quoting=csv.QUOTE_MINIMAL)
+    spamwriter.writerow(['time', 'q1', 'q2', 'q1_dot', 'q2_dot', 'tau1', 'tau2', 'q1_ref', 'q2_ref', 'tau1_ref', 'tau2_ref'])
+    for k in range(np.shape(t)[0]):
+        current_line = [t[k], q[0,k], q[1,k], q_dot[0,k], q_dot[1,k], tau[0,k], tau[1,k], q_des[0,k], q_des[1,k], tau_des[0,k], tau_des[1,k]]
+        spamwriter.writerow(current_line)
 
 
 plt.figure()

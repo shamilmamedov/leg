@@ -9,6 +9,7 @@ import time
 import communication as cmctn
 import hopper_kinematics
 from matplotlib import pyplot as plt
+import csv
 
 
 # Constants
@@ -39,12 +40,15 @@ Kp = np.array([[20., 0.], [0., 20.]])
 Kd = np.array([[1, 0.], [0., 1]])
 tau_max = [18., 18.] # 8 10
 
+Kp_jump = np.array([[50., 0.], [0., 50.]])
+Kd_jump = np.array([[1, 0.], [0., 1]])
+
 # Trajectry paramters
 A = np.array([0.1, 0.])
 omega = np.array([5*np.pi, 0.]) # maximum was 5
 
 # paramter that defines control or reading
-only_read_states = False
+only_read_states = True
 
 # Create a bus instance
 bus = can.interface.Bus(bustype='socketcan', channel='can0', bitrate=1000000)
@@ -96,8 +100,13 @@ else:
                 q_tilde_i = q_des_i - q[:,i] 
                 # compute control signal accroding to PD control law
                 tau_i = np.dot(Kp, q_tilde_i) - np.dot(Kd, q_dot[:,i])
-            elif (i > 1000 and i < 1300):
-                tau_i = np.array([-18., 18.])
+            elif (i > 1000 and i < 1250):
+                q_des_i = np.array([0., 0.])
+                # regulation error
+                q_tilde_i = q_des_i - q[:,i]
+                # compute control signal accroding to PD control law
+                tau_i = np.dot(Kp_jump, q_tilde_i) - np.dot(Kd_jump, q_dot[:,i])
+                # tau_i = np.array([-18., 18.])
             else:
                 q_des_i = q_post_jump
                 q_des = np.append(q_des, q_des_i.reshape((2,1)), axis=1)
@@ -160,5 +169,16 @@ for k in MOTOR_IDS:
     msg_in_k = bus.recv(timeout=0.01)
 
 
+
+# write into file
+filename = 'logs/max_jump_to_zero'
+
+with open(filename, 'w', newline='') as csvfile:
+    spamwriter = csv.writer(csvfile, delimiter=',',
+                            quotechar='|', quoting=csv.QUOTE_MINIMAL)
+    spamwriter.writerow(['time', 'q1', 'q2', 'q1_dot', 'q2_dot', 'tau1', 'tau2', 'tau1_ref', 'tau2_ref'])
+    for k in range(np.shape(t)[0]):
+        current_line = [t[k], q[0,k], q[1,k], q_dot[0,k], q_dot[1,k], tau[0,k], tau[1,k], tau_des[0,k], tau_des[1,k]]
+        spamwriter.writerow(current_line)
 
 
