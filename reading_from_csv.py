@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+from scipy.stats import zscore
 
 def plt_and_save(motors_to_show, subtitle, topic_to_plot, topic_to_plot_ref, fig_to_save, y_label, x_label = 't, sec'):
     '''
@@ -17,21 +18,27 @@ def plt_and_save(motors_to_show, subtitle, topic_to_plot, topic_to_plot_ref, fig
     for motor_to_show in motors_to_show:
         if len(motors_to_show) == 1:
             if topic_to_plot_ref != None:
-                ax.plot(t, topic_to_plot[motor_to_show], t, topic_to_plot_ref[motor_to_show])
+                ax.plot(t, topic_to_plot[motor_to_show], alpha=0.5, c = 'blue', label = 'real')
+                ax.plot(t, topic_to_plot_ref[motor_to_show], alpha=0.5, c = 'red', label = 'desired')
+                ax.plot(t, topic_to_plot_ref[motor_to_show]-topic_to_plot[motor_to_show], alpha=0.5, c = 'green', label = 'error')
             else:
-                ax.plot(t, topic_to_plot[motor_to_show])
+                ax.plot(t, topic_to_plot[motor_to_show], alpha = 0.5, c = 'blue', label = 'real')
             ax.set_xlabel(x_label)
             ax.set_ylabel(y_label)
+            ax.legend()
             ax.grid()
         else:
             i = motors_to_show.index(motor_to_show)
             if topic_to_plot_ref != None:
-                ax[i].plot(t, topic_to_plot[motor_to_show], t, topic_to_plot_ref[motor_to_show])
+                ax[i].plot(t, topic_to_plot[motor_to_show], alpha=0.5, c = 'blue', label = 'real')
+                ax[i].plot(t, topic_to_plot_ref[motor_to_show], alpha=0.5, c = 'red', label = 'desired')
+                ax[i].plot(t, topic_to_plot_ref[motor_to_show]-topic_to_plot[motor_to_show], alpha=0.5, c = 'green', label = 'error')
             else:
-                ax[i].plot(t, topic_to_plot[motor_to_show])
+                ax[i].plot(t, topic_to_plot[motor_to_show], alpha = 0.5, c = 'blue', label = 'real')
             ax[i].set_xlabel(x_label)
             ax[i].set_ylabel(y_label+'_'+str(motor_to_show))
             ax[i].grid()
+            ax[i].legend()
     plt.savefig("figures/"+fig_to_save+".svg")
     plt.show()
 
@@ -44,6 +51,12 @@ try:
 except FileNotFoundError:
     path_to_csv = 'logs/'+csv_name
     df = pd.read_csv(path_to_csv, delimiter = ',')
+
+#remove outliers from the data
+z_scores = zscore(df)
+abs_z_scores = np.abs(z_scores)
+filtered_entries = (abs_z_scores < 1.5).all(axis=1)
+df = df[filtered_entries]
 
 info_topics = list(df.columns)
 
@@ -98,7 +111,7 @@ q_dot = [q1_dot, q2_dot, q3_dot]
 tau = [tau1, tau2, tau3]
 tau_ref = [tau1_ref, tau2_ref, tau3_ref]
 
-motors_to_show = [0,1] # could be any: [0] or [0,2] and so on
+motors_to_show = [0, 1] # could be any: [0] or [0,2] and so on
 
 # Plot and save
 if not os.path.exists('figures'): # directory for storing figures
